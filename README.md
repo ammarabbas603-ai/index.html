@@ -2,91 +2,86 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>نظام قياسات زيوت السيارات</title>
+<title>دليل زيوت السيارات</title>
 <style>
-body{font-family:tahoma;direction:rtl;background:#f4f4f4;padding:20px}
+body{font-family:tahoma;direction:rtl;background:#f2f2f2;padding:20px}
 h1{color:#003366}
-select,input,button{padding:8px;margin:5px}
+select{padding:8px;margin:5px}
+input{padding:8px;margin:5px}
 table{width:100%;background:#fff;border-collapse:collapse;margin-top:20px}
-th,td{border:1px solid #aaa;padding:8px;text-align:center}
+th,td{border:1px solid #aaa;padding:10px;text-align:center}
 </style>
 </head>
 <body>
 
-<h1>نظام قياسات زيوت السيارات</h1>
+<h1>دليل زيوت السيارات</h1>
 
 <select id="brand" onchange="loadModels()">
-<option value="">الشركة</option>
+<option value="">اختر الشركة</option>
 </select>
 
 <select id="model" onchange="loadYears()">
-<option value="">الموديل</option>
+<option value="">اختر الموديل</option>
 </select>
 
-<select id="year" onchange="loadEngines()">
-<option value="">السنة</option>
+<select id="year" onchange="setOil()">
+<option value="">سنة الصنع</option>
 </select>
 
-<select id="engine" onchange="setOil()">
-<option value="">المحرك</option>
-</select>
-
-<input id="oil" readonly placeholder="نوع الزيت">
-<input id="oxi" type="number" placeholder="الأكسدة (%)">
-
-<button onclick="add()">إضافة</button>
+<input id="oil" readonly placeholder="نوع الزيت يظهر تلقائيًا">
 
 <table>
 <tr>
-<th>الشركة</th><th>الموديل</th><th>السنة</th><th>المحرك</th>
-<th>الزيت</th><th>الأكسدة</th><th>الحالة</th>
+<th>الشركة</th>
+<th>الموديل</th>
+<th>سنة الصنع</th>
+<th>نوع الزيت</th>
 </tr>
 <tbody id="rows"></tbody>
 </table>
 
 <script>
-// قاعدة بيانات قابلة للتوسعة
+// قاعدة بيانات أكبر (قابلة للتوسعة)
 const db = {
  "تويوتا":{
-  "كورولا":{
-   "2020":{
-    "1.6L":"5W-30",
-    "2.0L":"5W-30"
-   },
-   "2022":{
-    "1.6L":"5W-30"
-   }
-  },
-  "كامري":{
-   "2019":{
-    "2.5L":"5W-30"
-   }
-  }
+  "كورولا":{"2018":"5W-30","2019":"5W-30","2020":"5W-30","2021":"5W-30"},
+  "كامري":{"2019":"5W-30","2020":"5W-30","2021":"5W-30"},
+  "راف4":{"2020":"5W-30","2021":"5W-30"}
  },
  "نيسان":{
-  "التيما":{
-   "2020":{
-    "2.5L":"5W-30"
-   }
-  }
+  "التيما":{"2018":"5W-30","2019":"5W-30","2020":"5W-30"},
+  "باترول":{"2019":"10W-40","2020":"10W-40"},
+  "صني":{"2020":"5W-30","2021":"5W-30"}
  },
  "هيونداي":{
-  "إلنترا":{
-   "2021":{
-    "1.6L":"5W-30"
-   }
-  }
+  "إلنترا":{"2019":"5W-30","2020":"5W-30","2021":"5W-30"},
+  "سوناتا":{"2020":"5W-30","2021":"5W-30"}
+ },
+ "كيا":{
+  "سيراتو":{"2019":"5W-30","2020":"5W-30"},
+  "سبورتاج":{"2020":"5W-30","2021":"5W-30"}
+ },
+ "فورد":{
+  "إكسبلورر":{"2019":"5W-30","2020":"5W-30"},
+  "فوكس":{"2018":"5W-30","2019":"5W-30"}
+ },
+ "مرسيدس":{
+  "C200":{"2019":"5W-40","2020":"5W-40"},
+  "E300":{"2020":"5W-40","2021":"5W-40"}
+ },
+ "BMW":{
+  "320":{"2019":"5W-30","2020":"5W-30"},
+  "520":{"2020":"5W-30","2021":"5W-30"}
  }
 };
 
 // تحميل الشركات
 Object.keys(db).forEach(b=>{
- let o=new Option(b,b);
- brand.add(o);
+ brand.add(new Option(b,b));
 });
 
 function loadModels(){
- model.length=1; year.length=1; engine.length=1; oil.value="";
+ model.length=1; year.length=1; oil.value="";
  if(!brand.value) return;
  Object.keys(db[brand.value]).forEach(m=>{
   model.add(new Option(m,m));
@@ -94,49 +89,26 @@ function loadModels(){
 }
 
 function loadYears(){
- year.length=1; engine.length=1; oil.value="";
+ year.length=1; oil.value="";
  if(!model.value) return;
  Object.keys(db[brand.value][model.value]).forEach(y=>{
   year.add(new Option(y,y));
  });
 }
 
-function loadEngines(){
- engine.length=1; oil.value="";
- if(!year.value) return;
- Object.keys(db[brand.value][model.value][year.value]).forEach(e=>{
-  engine.add(new Option(e,e));
- });
-}
-
 function setOil(){
- oil.value=db[brand.value][model.value][year.value][engine.value]||"";
-}
-
-function status(o){
- if(o<20) return "جيد";
- if(o<35) return "متوسط";
- return "تغيير الزيت";
-}
-
-let data=[];
-function add(){
- if(!engine.value||!oxi.value) return;
- data.push([
-  brand.value,model.value,year.value,engine.value,
-  oil.value,oxi.value,status(oxi.value)
- ]);
- oxi.value="";
- render();
-}
-
-function render(){
- rows.innerHTML="";
- data.forEach(r=>{
-  rows.innerHTML+=`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`;
- });
+ if(!year.value) return;
+ oil.value = db[brand.value][model.value][year.value];
+ rows.innerHTML = `
+ <tr>
+  <td>${brand.value}</td>
+  <td>${model.value}</td>
+  <td>${year.value}</td>
+  <td>${oil.value}</td>
+ </tr>`;
 }
 </script>
 
 </body>
 </html>
+
