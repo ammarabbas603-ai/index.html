@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>قياسات زيوت السيارات</title>
+<title>نظام قياسات زيوت السيارات</title>
 <style>
 body{font-family:tahoma;direction:rtl;background:#f4f4f4;padding:20px}
 h1{color:#003366}
@@ -15,66 +15,102 @@ th,td{border:1px solid #aaa;padding:8px;text-align:center}
 
 <h1>نظام قياسات زيوت السيارات</h1>
 
-<!-- اختيار السيارة -->
-<select id="car" onchange="setOil()">
-<option value="">اختر السيارة</option>
-<option value="تويوتا كورولا">تويوتا كورولا</option>
-<option value="تويوتا كامري">تويوتا كامري</option>
-<option value="نيسان التيما">نيسان التيما</option>
-<option value="هيونداي إلنترا">هيونداي إلنترا</option>
+<select id="brand" onchange="loadModels()">
+<option value="">الشركة</option>
 </select>
 
-<!-- سنة الصنع -->
-<select id="year" onchange="setOil()">
-<option value="">سنة الصنع</option>
+<select id="model" onchange="loadYears()">
+<option value="">الموديل</option>
 </select>
 
-<!-- نوع الزيت -->
+<select id="year" onchange="loadEngines()">
+<option value="">السنة</option>
+</select>
+
+<select id="engine" onchange="setOil()">
+<option value="">المحرك</option>
+</select>
+
 <input id="oil" readonly placeholder="نوع الزيت">
-
 <input id="oxi" type="number" placeholder="الأكسدة (%)">
+
 <button onclick="add()">إضافة</button>
 
 <table>
 <tr>
-<th>السيارة</th>
-<th>سنة الصنع</th>
-<th>نوع الزيت</th>
-<th>الأكسدة</th>
-<th>الحالة</th>
+<th>الشركة</th><th>الموديل</th><th>السنة</th><th>المحرك</th>
+<th>الزيت</th><th>الأكسدة</th><th>الحالة</th>
 </tr>
 <tbody id="rows"></tbody>
 </table>
 
 <script>
-// توليد سنوات الصنع تلقائيًا
-for(let y=2005;y<=2025;y++){
- year.add(new Option(y,y));
-}
-
-// قاعدة بيانات السيارة + السنة + الزيت
-const oils = {
- "تويوتا كورولا":{
-  "2018":"5W-30",
-  "2019":"5W-30",
-  "2020":"5W-30"
+// قاعدة بيانات قابلة للتوسعة
+const db = {
+ "تويوتا":{
+  "كورولا":{
+   "2020":{
+    "1.6L":"5W-30",
+    "2.0L":"5W-30"
+   },
+   "2022":{
+    "1.6L":"5W-30"
+   }
+  },
+  "كامري":{
+   "2019":{
+    "2.5L":"5W-30"
+   }
+  }
  },
- "تويوتا كامري":{
-  "2019":"5W-30",
-  "2020":"5W-30"
+ "نيسان":{
+  "التيما":{
+   "2020":{
+    "2.5L":"5W-30"
+   }
+  }
  },
- "نيسان التيما":{
-  "2018":"5W-30",
-  "2019":"5W-30"
- },
- "هيونداي إلنترا":{
-  "2020":"5W-30",
-  "2021":"5W-30"
+ "هيونداي":{
+  "إلنترا":{
+   "2021":{
+    "1.6L":"5W-30"
+   }
+  }
  }
 };
 
+// تحميل الشركات
+Object.keys(db).forEach(b=>{
+ let o=new Option(b,b);
+ brand.add(o);
+});
+
+function loadModels(){
+ model.length=1; year.length=1; engine.length=1; oil.value="";
+ if(!brand.value) return;
+ Object.keys(db[brand.value]).forEach(m=>{
+  model.add(new Option(m,m));
+ });
+}
+
+function loadYears(){
+ year.length=1; engine.length=1; oil.value="";
+ if(!model.value) return;
+ Object.keys(db[brand.value][model.value]).forEach(y=>{
+  year.add(new Option(y,y));
+ });
+}
+
+function loadEngines(){
+ engine.length=1; oil.value="";
+ if(!year.value) return;
+ Object.keys(db[brand.value][model.value][year.value]).forEach(e=>{
+  engine.add(new Option(e,e));
+ });
+}
+
 function setOil(){
- oil.value = oils[car.value]?.[year.value] || "";
+ oil.value=db[brand.value][model.value][year.value][engine.value]||"";
 }
 
 function status(o){
@@ -85,8 +121,11 @@ function status(o){
 
 let data=[];
 function add(){
- if(!car.value||!year.value||!oxi.value) return;
- data.push([car.value,year.value,oil.value,oxi.value,status(oxi.value)]);
+ if(!engine.value||!oxi.value) return;
+ data.push([
+  brand.value,model.value,year.value,engine.value,
+  oil.value,oxi.value,status(oxi.value)
+ ]);
  oxi.value="";
  render();
 }
@@ -101,4 +140,3 @@ function render(){
 
 </body>
 </html>
-
