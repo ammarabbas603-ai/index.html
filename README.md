@@ -80,20 +80,26 @@ Object.keys(db).forEach(b=>{
  brand.add(new Option(b,b));
 });
 
-function loadModels(){
- model.length=1; year.length=1; oil.value="";
- if(!brand.value) return;
- Object.keys(db[brand.value]).forEach(m=>{
-  model.add(new Option(m,m));
- });
+function oil(type,capacity,engine){
+  let y = {};
+  for(let i=2000;i<=2025;i++){
+    y[i] = {
+      type:type,
+      capacity:capacity,
+      engine:engine
+    };
+  }
+  return y;
 }
 
-function loadYears(){
- year.length=1; oil.value="";
- if(!model.value) return;
- Object.keys(db[brand.value][model.value]).forEach(y=>{
-  year.add(new Option(y,y));
- });
+
+function showOil(){
+ let o = db[brand.value][model.value][year.value];
+ result.innerHTML = `
+ <div><span class="label">نوع الزيت:</span> <span class="value">${o.type}</span></div>
+ <div><span class="label">سعة الزيت:</span> <span class="value">${o.capacity}</span></div>
+ <div><span class="label">نوع المحرك:</span> <span class="value">${o.engine}</span></div>
+ `;
 }
 
 function setOil(){
