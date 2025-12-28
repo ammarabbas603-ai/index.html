@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>سما بغداد - تسجيل الزيارات</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 body{
  font-family:Tahoma;
@@ -19,7 +20,7 @@ body{
  border-radius:10px;
  box-shadow:0 5px 15px rgba(0,0,0,.15);
 }
-h2{text-align:center}
+h2{text-align:center;color:#0a7}
 input,textarea,button{
  width:100%;
  padding:12px;
@@ -32,10 +33,10 @@ button{
  color:#fff;
  border:none;
 }
-#status{
- margin-top:10px;
+#status{margin-top:10px;color:#555}
+#pdf{
+ display:none;
  font-size:14px;
- color:#555;
 }
 </style>
 </head>
@@ -49,42 +50,42 @@ button{
 <textarea id="notes" placeholder="ملاحظات"></textarea>
 
 <button onclick="getLocation()">📍 أخذ الموقع</button>
-<button onclick="addImage()">📸 إضافة صورة</button>
-<button onclick="saveVisit()">💾 حفظ الزيارة</button>
+<button onclick="createPDF()">📄 حفظ PDF</button>
 
 <div id="status"></div>
 </div>
 
+<!-- محتوى PDF -->
+<div id="pdf">
+<h3>سما بغداد</h3>
+<p><b>اسم المحل:</b> <span id="pShop"></span></p>
+<p><b>رقم الهاتف:</b> <span id="pPhone"></span></p>
+<p><b>التاريخ:</b> <span id="pDate"></span></p>
+<p><b>الموقع:</b> <span id="pLocation"></span></p>
+<p><b>ملاحظات:</b> <span id="pNotes"></span></p>
+</div>
+
 <script>
-let locationData="";
-let images=[];
+let locationLink="";
 
 function getLocation(){
  navigator.geolocation.getCurrentPosition(pos=>{
-  locationData=`https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
-  document.getElementById("status").innerHTML="📍 تم أخذ الموقع";
+  locationLink=`https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+  document.getElementById("status").innerHTML="📍 تم تحديد الموقع";
  });
 }
 
-function addImage(){
- let input=document.createElement("input");
- input.type="file";
- input.accept="image/*";
- input.onchange=e=>images.push(URL.createObjectURL(e.target.files[0]));
- input.click();
-}
+function createPDF(){
+ document.getElementById("pShop").innerText=shop.value;
+ document.getElementById("pPhone").innerText=phone.value;
+ document.getElementById("pDate").innerText=new Date().toLocaleString();
+ document.getElementById("pLocation").innerText=locationLink;
+ document.getElementById("pNotes").innerText=notes.value;
 
-function saveVisit(){
- let data={
-  shop:shop.value,
-  phone:phone.value,
-  notes:notes.value,
-  location:locationData,
-  date:new Date().toLocaleString(),
-  images:images
- };
- localStorage.setItem(Date.now(),JSON.stringify(data));
- document.getElementById("status").innerHTML="✅ تم حفظ الزيارة";
+ html2pdf().from(document.getElementById("pdf"))
+ .save("زيارة-"+Date.now()+".pdf");
+
+ document.getElementById("status").innerHTML="✅ تم إنشاء ملف PDF";
 }
 </script>
 
