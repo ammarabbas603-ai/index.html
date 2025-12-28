@@ -81,8 +81,18 @@ function makePDF(d){
  pDate.innerText=d.date;
  pLocation.innerText=d.location;
  pNotes.innerText=d.notes;
- html2pdf().from(pdf).save("زيارة-"+Date.now()+".pdf");
-}
+html2pdf().from(pdf).outputPdf('blob').then(function(blob){
+  const file = new File([blob], "زيارة-"+Date.now()+".pdf", {type:"application/pdf"});
+  if(navigator.share){
+    navigator.share({
+      files:[file],
+      title:"تقرير زيارة - سما بغداد"
+    });
+  }else{
+    html2pdf().from(pdf).save();
+  }
+});
+
 
 function loadVisits(){
  list.innerHTML="";
